@@ -14,6 +14,10 @@ public class Supervisa {
     @Column(name = "codigo_cargo_sup")
     private Long codigoCargoSup;
     
+    // 👇 NUEVO CAMPO DE EMAIL
+    @Column(name = "email_sup", length = 255)
+    private String emailSup;
+    
     @ManyToOne
     @JoinColumn(name = "fk_codigo_car", referencedColumnName = "codigo_car")
     private Cargo cargo;
@@ -28,10 +32,11 @@ public class Supervisa {
     public Supervisa() {}
     
     // Constructor simplificado (sin fechas, se asignan automáticamente)
-    public Supervisa(Long codigoSup, Long codigoCargoSup, Cargo cargo) {
+    public Supervisa(Long codigoSup, Long codigoCargoSup, Cargo cargo, String emailSup) {
         this.codigoSup = codigoSup;
         this.codigoCargoSup = codigoCargoSup;
         this.cargo = cargo;
+        this.emailSup = emailSup;  // 👈 AGREGADO
         this.fechaCreadoSup = LocalDateTime.now();
         this.fechaEditadoSup = LocalDateTime.now();
     }
@@ -51,6 +56,15 @@ public class Supervisa {
     
     public void setCodigoCargoSup(Long codigoCargoSup) {
         this.codigoCargoSup = codigoCargoSup;
+    }
+    
+    // 👇 GETTER Y SETTER PARA EMAIL
+    public String getEmailSup() {
+        return emailSup;
+    }
+    
+    public void setEmailSup(String emailSup) {
+        this.emailSup = emailSup;
     }
     
     public Cargo getCargo() {
@@ -102,6 +116,7 @@ public class Supervisa {
         return "Supervisa{" +
                 "codigoSup=" + codigoSup +
                 ", codigoCargoSup=" + codigoCargoSup +
+                ", emailSup='" + emailSup + '\'' +  // 👈 AGREGADO AL toString
                 ", cargo=" + (cargo != null ? cargo.getNombreCar() : "null") +
                 ", fechaCreadoSup=" + fechaCreadoSup +
                 ", fechaEditadoSup=" + fechaEditadoSup +

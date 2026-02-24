@@ -8,6 +8,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 @Controller
@@ -17,10 +18,40 @@ public class CargoController {
     @Autowired
     private CargoRepository cargoRepository;
     
-    // ============= LISTAR TODOS LOS CARGOS =============
+    // ============= LISTAR TODOS LOS CARGOS CON ESTADÍSTICAS =============
     @GetMapping
     public String listarCargos(Model model) {
-        model.addAttribute("cargos", cargoRepository.findAll());
+        // Obtener todos los cargos
+        List<Cargo> cargos = cargoRepository.findAll();
+        model.addAttribute("cargos", cargos);
+        
+        // ===== CALCULAR ESTADÍSTICAS =====
+        // Total de cargos
+        long totalCargos = cargos.size();
+        model.addAttribute("totalCargos", totalCargos);
+        
+        // Cargos activos
+        long cargosActivos = cargos.stream()
+                .filter(c -> "Activo".equalsIgnoreCase(c.getEstadoCar()))
+                .count();
+        model.addAttribute("cargosActivos", cargosActivos);
+        
+        // Cargos con riesgo alto
+        long cargosRiesgoAlto = cargos.stream()
+                .filter(c -> "Alto".equalsIgnoreCase(c.getNivelRiesgoCar()) || 
+                             "Crítico".equalsIgnoreCase(c.getNivelRiesgoCar()) ||
+                             "Alto".equalsIgnoreCase(c.getGrupoRiesgoCar()))
+                .count();
+        model.addAttribute("cargosRiesgoAlto", cargosRiesgoAlto);
+        
+        // Total de áreas distintas
+        long totalAreas = cargos.stream()
+                .map(Cargo::getAreaCar)
+                .filter(area -> area != null && !area.trim().isEmpty())
+                .distinct()
+                .count();
+        model.addAttribute("totalAreas", totalAreas);
+        
         return "cargo/list";
     }
     
@@ -159,7 +190,31 @@ public class CargoController {
                 model.addAttribute("error", "No se encontró un cargo con ese nombre");
             }
         }
-        model.addAttribute("cargos", cargoRepository.findAll());
+        
+        // Si no hay búsqueda o no se encuentra, mostrar lista con estadísticas
+        List<Cargo> cargos = cargoRepository.findAll();
+        model.addAttribute("cargos", cargos);
+        
+        // Recalcular estadísticas para la vista
+        long totalCargos = cargos.size();
+        long cargosActivos = cargos.stream()
+                .filter(c -> "Activo".equalsIgnoreCase(c.getEstadoCar()))
+                .count();
+        long cargosRiesgoAlto = cargos.stream()
+                .filter(c -> "Alto".equalsIgnoreCase(c.getNivelRiesgoCar()) || 
+                             "Crítico".equalsIgnoreCase(c.getNivelRiesgoCar()))
+                .count();
+        long totalAreas = cargos.stream()
+                .map(Cargo::getAreaCar)
+                .filter(area -> area != null && !area.trim().isEmpty())
+                .distinct()
+                .count();
+        
+        model.addAttribute("totalCargos", totalCargos);
+        model.addAttribute("cargosActivos", cargosActivos);
+        model.addAttribute("cargosRiesgoAlto", cargosRiesgoAlto);
+        model.addAttribute("totalAreas", totalAreas);
+        
         return "cargo/list";
     }
     
@@ -168,5 +223,35 @@ public class CargoController {
     @ResponseBody
     public boolean existeCargo(@PathVariable Long codigo) {
         return cargoRepository.existsById(codigo);
+    }
+    
+    // ============= ENDPOINT PARA OBTENER ESTADÍSTICAS EN JSON =============
+    @GetMapping("/estadisticas")
+    @ResponseBody
+    public String obtenerEstadisticas() {
+        List<Cargo> cargos = cargoRepository.findAll();
+        
+        long totalCargos = cargos.size();
+        long cargosActivos = cargos.stream()
+                .filter(c -> "Activo".equalsIgnoreCase(c.getEstadoCar()))
+                .count();
+        long cargosRiesgoAlto = cargos.stream()
+                .filter(c -> "Alto".equalsIgnoreCase(c.getNivelRiesgoCar()) || 
+                             "Crítico".equalsIgnoreCase(c.getNivelRiesgoCar()))
+                .count();
+        long totalAreas = cargos.stream()
+                .map(Cargo::getAreaCar)
+                .filter(area -> area != null && !area.trim().isEmpty())
+                .distinct()
+                .count();
+        
+        return String.format(
+            "📊 ESTADÍSTICAS DE CARGOS:\n" +
+            "Total de cargos: %d\n" +
+            "Cargos activos: %d\n" +
+            "Cargos con riesgo alto: %d\n" +
+            "Áreas distintas: %d",
+            totalCargos, cargosActivos, cargosRiesgoAlto, totalAreas
+        );
     }
 }

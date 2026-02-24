@@ -2,6 +2,7 @@ package com.utc.proyecto1.controller;
 
 import com.utc.proyecto1.entity.Usuario;
 import com.utc.proyecto1.repository.UsuarioRepository;
+import com.utc.proyecto1.service.EmailService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -16,6 +17,9 @@ public class LoginController {
     
     @Autowired
     private UsuarioRepository usuarioRepository;
+    
+    @Autowired
+    private EmailService emailService;
     
     @GetMapping("/login")
     public String loginForm(Model model, HttpSession session) {
@@ -72,6 +76,22 @@ public class LoginController {
                     System.out.println("Atributos de sesión:");
                     System.out.println("  - usuario: " + (session.getAttribute("usuario") != null ? "OK" : "NULL"));
                     System.out.println("  - username: " + session.getAttribute("username"));
+                    
+                    // Enviar notificación de login exitoso
+                    try {
+                        String asunto = "🔔 Notificación de Acceso - Sistema";
+                        String contenido = "Hola " + usuario.getNombreCompleto() + ",\n\n" +
+                                          "Se ha registrado un acceso a tu cuenta:\n" +
+                                          "📅 Fecha y hora: " + LocalDateTime.now() + "\n" +
+                                          "🖥️ Desde: Sistema de Gestión\n\n" +
+                                          "Si no fuiste tú, contacta al administrador.\n\n" +
+                                          "Saludos,\nEquipo del Sistema";
+                        
+                        emailService.enviarCorreoSimple(usuario.getEmail(), asunto, contenido);
+                        System.out.println("✅ Notificación de acceso enviada a: " + usuario.getEmail());
+                    } catch (Exception e) {
+                        System.out.println("⚠️ No se pudo enviar notificación de acceso: " + e.getMessage());
+                    }
                     
                     // Redirigir al inicio
                     return "redirect:/";
@@ -140,16 +160,43 @@ public class LoginController {
             return "redirect:/registro";
         }
         
-        // Configurar usuario nuevo
-        usuario.setFechaCreacion(LocalDateTime.now());
-        usuario.setActivo(true);
-        usuario.setRol("USER");
+        try {
+            // Configurar usuario nuevo
+            usuario.setFechaCreacion(LocalDateTime.now());
+            usuario.setActivo(true);
+            usuario.setRol("USER");
+            
+            // Guardar usuario
+            usuarioRepository.save(usuario);
+            System.out.println("Usuario registrado exitosamente: " + usuario.getUsername());
+            
+            // Enviar correo de bienvenida
+            try {
+                String asunto = "🎉 ¡Bienvenido al Sistema!";
+                String contenido = "Hola " + usuario.getNombreCompleto() + ",\n\n" +
+                                  "¡Bienvenido a nuestro sistema!\n\n" +
+                                  "Tu cuenta ha sido creada exitosamente con los siguientes datos:\n" +
+                                  "👤 Usuario: " + usuario.getUsername() + "\n" +
+                                  "📧 Email: " + usuario.getEmail() + "\n" +
+                                  "📅 Fecha de registro: " + LocalDateTime.now() + "\n\n" +
+                                  "Ya puedes iniciar sesión con tus credenciales.\n\n" +
+                                  "Saludos,\nEquipo del Sistema";
+                
+                emailService.enviarCorreoSimple(usuario.getEmail(), asunto, contenido);
+                System.out.println("✅ Correo de bienvenida enviado a: " + usuario.getEmail());
+            } catch (Exception e) {
+                System.out.println("⚠️ No se pudo enviar correo de bienvenida: " + e.getMessage());
+                // No fallamos el registro por error de correo
+            }
+            
+            redirectAttributes.addFlashAttribute("success", "Registro exitoso. Por favor inicia sesión.");
+            
+        } catch (Exception e) {
+            System.out.println("❌ Error en registro: " + e.getMessage());
+            redirectAttributes.addFlashAttribute("error", "Error al registrar: " + e.getMessage());
+            return "redirect:/registro";
+        }
         
-        // Guardar usuario
-        usuarioRepository.save(usuario);
-        System.out.println("Usuario registrado exitosamente: " + usuario.getUsername());
-        
-        redirectAttributes.addFlashAttribute("success", "Registro exitoso. Por favor inicia sesión.");
         return "redirect:/login";
     }
     
@@ -167,6 +214,7 @@ public class LoginController {
             sb.append("✅ USUARIO EN SESIÓN:\n");
             sb.append("  Username: ").append(usuario.getUsername()).append("\n");
             sb.append("  Nombre: ").append(usuario.getNombreCompleto()).append("\n");
+            sb.append("  Email: ").append(usuario.getEmail()).append("\n");
             sb.append("  Rol: ").append(usuario.getRol()).append("\n");
             sb.append("  ID: ").append(usuario.getIdUsuario()).append("\n");
         } else {
@@ -204,15 +252,16 @@ public class LoginController {
                 usuarioRepository.findAll().forEach(u -> {
                     sb.append("  - ").append(u.getUsername())
                       .append(" | ").append(u.getPassword())
+                      .append(" | ").append(u.getEmail())
                       .append(" | Activo: ").append(u.getActivo())
                       .append(" | Rol: ").append(u.getRol())
                       .append("\n");
                 });
             } else {
                 sb.append("❌ No hay usuarios. Ejecuta:\n");
-                sb.append("INSERT INTO usuario (username, password, email, nombre_completo, rol, activo) VALUES\n");
-                sb.append("('admin', 'admin123', 'admin@sistema.com', 'Administrador', 'ADMIN', 1),\n");
-                sb.append("('user', 'user123', 'usuario@sistema.com', 'Usuario Prueba', 'USER', 1);\n");
+                sb.append("INSERT INTO usuario (username, password, email, nombre_completo, rol, activo, fecha_creacion) VALUES\n");
+                sb.append("('admin', 'admin123', 'admin@sistema.com', 'Administrador', 'ADMIN', 1, NOW()),\n");
+                sb.append("('user', 'user123', 'usuario@sistema.com', 'Usuario Prueba', 'USER', 1, NOW());\n");
             }
         } catch (Exception e) {
             sb.append("❌ ERROR: ").append(e.getMessage()).append("\n");
@@ -220,5 +269,74 @@ public class LoginController {
         }
         
         return sb.toString().replace("\n", "<br>");
+    }
+    
+    // ============= ENDPOINTS PARA PRUEBAS DE CORREO =============
+    
+    /**
+     * Endpoint para probar el envío de correos
+     * Uso: http://localhost:8081/test-email
+     */
+    @GetMapping("/test-email")
+    @ResponseBody
+    public String testEmail(@RequestParam(defaultValue = "fabian.alegria1188@utc.edu.ec") String destinatario) {
+        try {
+            String asunto = "📧 PRUEBA DE CORREO - " + LocalDateTime.now();
+            String contenido = "Hola!\n\n" +
+                              "Este es un correo de prueba desde tu aplicación Spring Boot.\n\n" +
+                              "Si recibes esto, la configuración de email funciona correctamente.\n\n" +
+                              "Detalles técnicos:\n" +
+                              "📅 Fecha y hora: " + LocalDateTime.now() + "\n" +
+                              "📧 Destinatario: " + destinatario + "\n" +
+                              "🖥️ Aplicación: Proyecto1\n\n" +
+                              "Saludos,\nEquipo de Desarrollo";
+            
+            emailService.enviarCorreoSimple(destinatario, asunto, contenido);
+            
+            return "<h2 style='color:green'>✅ CORREO ENVIADO EXITOSAMENTE</h2>" +
+                   "<p><strong>Destinatario:</strong> " + destinatario + "</p>" +
+                   "<p><strong>Asunto:</strong> " + asunto + "</p>" +
+                   "<p><strong>Hora:</strong> " + LocalDateTime.now() + "</p>" +
+                   "<p>📬 Revisa tu bandeja de entrada y la carpeta de SPAM.</p>";
+        } catch (Exception e) {
+            return "<h2 style='color:red'>❌ ERROR AL ENVIAR CORREO</h2>" +
+                   "<p><strong>Error:</strong> " + e.getMessage() + "</p>" +
+                   "<p><strong>Tipo:</strong> " + e.getClass().getName() + "</p>" +
+                   "<p><strong>Solución posible:</strong> Verifica tu contraseña de aplicación en Gmail</p>";
+        }
+    }
+    
+    /**
+     * Endpoint para verificar el estado del servicio de correo
+     * Uso: http://localhost:8081/verificar-email-service
+     */
+    @GetMapping("/verificar-email-service")
+    @ResponseBody
+    public String verificarEmailService() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("<h2>🔧 VERIFICACIÓN DEL SERVICIO DE CORREO</h2>");
+        
+        // Verificar EmailService
+        if (emailService != null) {
+            sb.append("<p style='color:green'>✅ EmailService: DISPONIBLE</p>");
+        } else {
+            sb.append("<p style='color:red'>❌ EmailService: NO DISPONIBLE</p>");
+        }
+        
+        // Mostrar configuración
+        sb.append("<h3>📋 Configuración actual:</h3>");
+        sb.append("<ul>");
+        sb.append("<li><strong>Host:</strong> smtp.gmail.com</li>");
+        sb.append("<li><strong>Puerto:</strong> 587</li>");
+        sb.append("<li><strong>Usuario:</strong> fabian.alegria1188@utc.edu.ec</li>");
+        sb.append("<li><strong>Autenticación:</strong> Sí</li>");
+        sb.append("<li><strong>TLS:</strong> Habilitado</li>");
+        sb.append("</ul>");
+        
+        sb.append("<h3>🧪 Prueba rápida:</h3>");
+        sb.append("<p>Usa este enlace para probar: <a href='/test-email'>/test-email</a></p>");
+        sb.append("<p>O con destinatario específico: <a href='/test-email?destinatario=tu@email.com'>/test-email?destinatario=tu@email.com</a></p>");
+        
+        return sb.toString();
     }
 }

@@ -470,35 +470,35 @@
                 </div>
             </div>
             
-            <!-- Barra de estadísticas -->
+            <!-- Barra de estadísticas - CORREGIDA -->
             <div class="stats-bar">
                 <div class="stat-item">
                     <div class="stat-icon">
                         <i class="bi bi-eye"></i>
                     </div>
-                    <div class="stat-value" th:text="${#lists.size(supervisiones)}">0</div>
-                    <div class="stat-label">Total Supervisiones</div>
+                    <div class="stat-value" th:text="${totalSupervisiones != null ? totalSupervisiones : '0'}">0</div>
+                    <div class="stat-label">TOTAL SUPERVISIONES</div>
                 </div>
                 <div class="stat-item">
                     <div class="stat-icon">
                         <i class="bi bi-calendar-check"></i>
                     </div>
                     <div class="stat-value" th:text="${supervisionesHoy != null ? supervisionesHoy : '0'}">0</div>
-                    <div class="stat-label">Hoy</div>
+                    <div class="stat-label">HOY</div>
                 </div>
                 <div class="stat-item">
                     <div class="stat-icon">
                         <i class="bi bi-calendar-week"></i>
                     </div>
                     <div class="stat-value" th:text="${supervisionesSemana != null ? supervisionesSemana : '0'}">0</div>
-                    <div class="stat-label">Esta Semana</div>
+                    <div class="stat-label">ESTA SEMANA</div>
                 </div>
                 <div class="stat-item">
                     <div class="stat-icon">
                         <i class="bi bi-building"></i>
                     </div>
-                    <div class="stat-value" th:text="${cargosConSupervision != null ? cargosConSupervision : '0'}">0</div>
-                    <div class="stat-label">Cargos Supervisados</div>
+                    <div class="stat-value" th:text="${cargosSupervisados != null ? cargosSupervisados : '0'}">0</div>
+                    <div class="stat-label">CARGOS SUPERVISADOS</div>
                 </div>
             </div>
             
@@ -650,16 +650,16 @@
                 </table>
             </div>
             
-            <!-- Footer con información adicional -->
+            <!-- Footer con información adicional - CORREGIDO -->
             <div class="pagination-info">
                 <div class="total-badge">
                     <i class="bi bi-database"></i>
-                    Total: <strong th:text="${#lists.size(supervisiones)}">0</strong> supervisiones
+                    Total: <strong th:text="${totalSupervisiones != null ? totalSupervisiones : '0'}">0</strong> supervisiones
                 </div>
                 <div class="d-flex gap-3">
                     <small class="text-muted">
                         <i class="bi bi-building"></i>
-                        <span th:text="${cargosConSupervision != null ? cargosConSupervision : '0'}"></span> cargos supervisados
+                        <span th:text="${cargosSupervisados != null ? cargosSupervisados : '0'}">0</span> cargos supervisados
                     </small>
                     <small class="text-muted">
                         <i class="bi bi-clock"></i>
