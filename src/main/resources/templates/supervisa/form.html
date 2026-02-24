@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${supervision.codigoSup == null ? 'Nueva Supervisión' : 'Editar Supervisión'}">Formulario Supervisión</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            padding: 40px 0;
+        }
+        
+        .form-container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        
+        .glass-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 30px;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.3);
+            overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.2);
+            animation: slideIn 0.6s ease-out;
+        }
+        
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .form-header {
+            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+            padding: 40px 30px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .form-header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 70%);
+            animation: rotate 10s linear infinite;
+        }
+        
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        
+        .form-header h1 {
+            color: white;
+            font-weight: 800;
+            font-size: 2.5rem;
+            margin: 0;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+            position: relative;
+            z-index: 1;
+        }
+        
+        .form-header i {
+            font-size: 4rem;
+            color: white;
+            margin-bottom: 15px;
+            filter: drop-shadow(0 5px 15px rgba(0,0,0,0.3));
+            position: relative;
+            z-index: 1;
+        }
+        
+        .form-body {
+            padding: 40px;
+        }
+        
+        .back-btn {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            z-index: 10;
+        }
+        
+        .btn-back {
+            background: rgba(255,255,255,0.2);
+            border: 2px solid rgba(255,255,255,0.3);
+            color: white;
+            border-radius: 50px;
+            padding: 10px 25px;
+            font-weight: 600;
+            backdrop-filter: blur(5px);
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .btn-back:hover {
+            background: rgba(255,255,255,0.3);
+            border-color: rgba(255,255,255,0.5);
+            color: white;
+            transform: translateX(-5px);
+        }
+        
+        .form-label {
+            font-weight: 600;
+            color: #555;
+            margin-bottom: 8px;
+            font-size: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .form-label i {
+            margin-right: 8px;
+            color: #43e97b;
+        }
+        
+        .form-control, .form-select {
+            border: 2px solid #e0e0e0;
+            border-radius: 15px;
+            padding: 12px 18px;
+            font-size: 1rem;
+            transition: all 0.3s;
+            background: white;
+        }
+        
+        .form-control:focus, .form-select:focus {
+            border-color: #43e97b;
+            box-shadow: 0 0 0 4px rgba(67, 233, 123, 0.1);
+            outline: none;
+        }
+        
+        .form-text {
+            color: #888;
+            font-size: 0.9rem;
+            margin-top: 6px;
+            padding-left: 5px;
+        }
+        
+        .input-group-icon {
+            position: relative;
+        }
+        
+        .input-group-icon i {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #43e97b;
+            font-size: 1.2rem;
+        }
+        
+        .input-group-icon input,
+        .input-group-icon select {
+            padding-left: 45px;
+        }
+        
+        .floating-label {
+            position: relative;
+            margin-bottom: 25px;
+        }
+        
+        .btn-submit {
+            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+            border: none;
+            border-radius: 15px;
+            padding: 15px 40px;
+            font-weight: 700;
+            font-size: 1.1rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: white;
+            transition: all 0.4s;
+            box-shadow: 0 10px 20px rgba(67, 233, 123, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .btn-submit::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+        
+        .btn-submit:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 30px rgba(67, 233, 123, 0.4);
+        }
+        
+        .btn-submit:hover::before {
+            left: 100%;
+        }
+        
+        .btn-cancel {
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 15px;
+            padding: 15px 40px;
+            font-weight: 600;
+            font-size: 1.1rem;
+            color: #666;
+            transition: all 0.3s;
+            text-decoration: none;
+        }
+        
+        .btn-cancel:hover {
+            border-color: #ff6b6b;
+            color: #ff6b6b;
+            background: #fff5f5;
+            transform: translateY(-2px);
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 15px;
+            justify-content: flex-end;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 2px dashed #e0e0e0;
+        }
+        
+        .floating-shape {
+            position: fixed;
+            width: 300px;
+            height: 300px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0.1) 100%);
+            pointer-events: none;
+            z-index: -1;
+        }
+        
+        .shape1 {
+            top: -100px;
+            left: -100px;
+            animation: float 8s ease-in-out infinite;
+        }
+        
+        .shape2 {
+            bottom: -100px;
+            right: -100px;
+            animation: float 6s ease-in-out infinite reverse;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-30px) rotate(10deg); }
+        }
+        
+        .badge-status {
+            display: inline-block;
+            padding: 8px 15px;
+            border-radius: 50px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+        
+        .badge-new {
+            background: rgba(67, 233, 123, 0.1);
+            color: #43e97b;
+            border: 1px solid rgba(67, 233, 123, 0.3);
+        }
+        
+        .badge-edit {
+            background: rgba(255, 193, 7, 0.1);
+            color: #ffc107;
+            border: 1px solid rgba(255, 193, 7, 0.3);
+        }
+        
+        .required-field::after {
+            content: '*';
+            color: #ff6b6b;
+            margin-left: 4px;
+            font-weight: bold;
+        }
+        
+        .info-card {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 15px;
+            margin-top: 20px;
+            border-left: 4px solid #43e97b;
+        }
+        
+        .info-card i {
+            color: #43e97b;
+            margin-right: 10px;
+        }
+        
+        .preview-card {
+            background: linear-gradient(135deg, #43e97b10, #38f9d710);
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 20px;
+            border: 1px solid #43e97b30;
+        }
+        
+        .preview-title {
+            font-size: 0.9rem;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .preview-value {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .supervision-badge {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 50px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-left: 10px;
+        }
+        
+        .badge-si {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .badge-no {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .row {
+            margin-bottom: 15px;
+        }
+        
+        hr {
+            margin: 30px 0;
+            border: 1px dashed #e0e0e0;
+        }
+    </style>
+</head>
+<body>
+    <div class="floating-shape shape1"></div>
+    <div class="floating-shape shape2"></div>
+    
+    <div class="container form-container">
+        <div class="back-btn">
+            <a href="/supervisiones" class="btn-back">
+                <i class="bi bi-arrow-left"></i> Volver al listado
+            </a>
+        </div>
+        
+        <div class="glass-card">
+            <div class="form-header">
+                <i class="bi bi-eye-fill"></i>
+                <h1 th:text="${supervision.codigoSup == null ? 'Nueva Supervisión' : 'Editar Supervisión'}">Formulario Supervisión</h1>
+                <div class="mt-3">
+                    <span class="badge-status" th:classappend="${supervision.codigoSup == null ? 'badge-new' : 'badge-edit'}">
+                        <i class="bi" th:class="${supervision.codigoSup == null ? 'bi-plus-circle' : 'bi-pencil-square'}"></i>
+                        <span th:text="${supervision.codigoSup == null ? 'Creando nueva supervisión' : 'Editando supervisión existente'}"></span>
+                    </span>
+                </div>
+            </div>
+            
+            <div class="form-body">
+                <!-- Vista previa para edición -->
+                <div th:if="${supervision.codigoSup != null}" class="preview-card">
+                    <div class="row">
+                        <div class="col-6">
+                            <div class="preview-title">Código de Supervisión</div>
+                            <div class="preview-value">
+                                <i class="bi bi-hash"></i>
+                                <span th:text="${supervision.codigoSup}">101</span>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="preview-title">Fecha de Creación</div>
+                            <div class="preview-value">
+                                <i class="bi bi-calendar3"></i>
+                                <span th:text="${#temporals.format(supervision.fechaCreadoSup, 'dd/MM/yyyy HH:mm')}">01/01/2024 10:30</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <form th:action="@{${supervision.codigoSup == null ? '/supervisiones/guardar' : '/supervisiones/actualizar/' + supervision.codigoSup}}" 
+                      method="post" th:object="${supervision}">
+                    
+                    <input type="hidden" th:field="*{codigoSup}" th:unless="${supervision.codigoSup == null}"/>
+                    
+                    <!-- ===== SECCIÓN 1: IDENTIFICACIÓN ===== -->
+                    <h5 class="mb-3" style="color: #43e97b; font-weight: 700;">
+                        <i class="bi bi-tags me-2"></i>Identificación de la Supervisión
+                    </h5>
+                    
+                    <div class="row">
+                        <div class="col-md-6" th:if="${supervision.codigoSup == null}">
+                            <div class="floating-label">
+                                <label for="codigoSup" class="form-label">
+                                    <i class="bi bi-upc-scan"></i> Código Supervisión <span class="required-field"></span>
+                                </label>
+                                <div class="input-group-icon">
+                                    <i class="bi bi-hash"></i>
+                                    <input type="number" class="form-control" id="codigoSup" 
+                                           th:field="*{codigoSup}" 
+                                           placeholder="Ej: 101, 102..." 
+                                           required>
+                                </div>
+                                <div class="form-text">Código único de la supervisión</div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="floating-label">
+                                <label for="codigoCargoSup" class="form-label">
+                                    <i class="bi bi-upc-scan"></i> Código Cargo <span class="required-field"></span>
+                                </label>
+                                <div class="input-group-icon">
+                                    <i class="bi bi-briefcase"></i>
+                                    <input type="number" class="form-control" id="codigoCargoSup" 
+                                           th:field="*{codigoCargoSup}" 
+                                           placeholder="Ej: 201, 202..." 
+                                           required>
+                                </div>
+                                <div class="form-text">Código del cargo supervisado</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- ===== SECCIÓN 2: SELECCIÓN DE CARGO ===== -->
+                    <h5 class="mb-3 mt-4" style="color: #43e97b; font-weight: 700;">
+                        <i class="bi bi-building me-2"></i>Selección de Cargo
+                    </h5>
+                    
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="floating-label">
+                                <label for="cargoId" class="form-label">
+                                    <i class="bi bi-briefcase-fill"></i> Seleccionar Cargo
+                                </label>
+                                <div class="input-group-icon">
+                                    <i class="bi bi-building"></i>
+                                    <select class="form-select" id="cargoId" name="cargoId">
+                                        <option value="">-- Seleccionar un cargo --</option>
+                                        <option th:each="c : ${cargos}" 
+                                                th:value="${c.codigoCar}" 
+                                                th:text="${c.codigoCar + ' - ' + c.nombreCargo}"
+                                                th:selected="${supervision.cargo != null and supervision.cargo.codigoCar == c.codigoCar}">
+                                        </option>
+                                    </select>
+                                </div>
+                                <div class="form-text">
+                                    <i class="bi bi-lightbulb"></i> Selecciona el cargo (autocompleta el código)
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Información del cargo seleccionado -->
+                    <div th:if="${supervision.cargo != null}" class="info-card">
+                        <div class="d-flex align-items-start">
+                            <i class="bi bi-info-circle-fill fs-4 me-3"></i>
+                            <div>
+                                <strong>Cargo seleccionado actualmente:</strong><br>
+                                <span class="badge bg-primary me-2" th:text="'Código: ' + ${supervision.cargo.codigoCar}"></span>
+                                <span class="badge bg-info" th:text="${supervision.cargo.nombreCargo}"></span>
+                                <br>
+                                <small class="text-muted">
+                                    <i class="bi bi-building me-1"></i> Área: <span th:text="${supervision.cargo.areaCar != null ? supervision.cargo.areaCar : 'No especificada'}"></span>
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- ===== SECCIÓN 3: INFORMACIÓN DE SUPERVISIONES DEL CARGO ===== -->
+                    <div th:if="${supervision.cargo != null and supervision.cargo.supervisas != null and #lists.size(supervision.cargo.supervisas) > 0}" 
+                         class="info-card mt-3" style="border-left-color: #28a745;">
+                        <div class="d-flex align-items-start">
+                            <i class="bi bi-check-circle-fill fs-4 me-3 text-success"></i>
+                            <div>
+                                <strong class="text-success">Este cargo ya tiene supervisiones registradas:</strong><br>
+                                <span th:text="'Total: ' + ${#lists.size(supervision.cargo.supervisas)} + ' supervisión(es)'"></span>
+                                <div class="mt-2">
+                                    <small>
+                                        <i class="bi bi-clock-history me-1"></i>
+                                        Última: <span th:text="${#temporals.format(supervision.cargo.supervisas[0].fechaCreadoSup, 'dd/MM/yyyy')}"></span>
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div th:if="${supervision.cargo != null and (supervision.cargo.supervisas == null or #lists.size(supervision.cargo.supervisas) == 0)}" 
+                         class="info-card mt-3" style="border-left-color: #ffc107;">
+                        <div class="d-flex align-items-start">
+                            <i class="bi bi-exclamation-triangle-fill fs-4 me-3 text-warning"></i>
+                            <div>
+                                <strong class="text-warning">Este cargo no tiene supervisiones previas</strong><br>
+                                <span>Será la primera supervisión para este cargo</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- ===== SECCIÓN 4: FECHAS (SOLO LECTURA EN EDICIÓN) ===== -->
+                    <div th:if="${supervision.codigoSup != null}" class="mt-4">
+                        <h5 class="mb-3" style="color: #43e97b; font-weight: 700;">
+                            <i class="bi bi-calendar me-2"></i>Información de Fechas
+                        </h5>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label"><i class="bi bi-calendar-plus"></i> Fecha Creación</label>
+                                    <input type="text" class="form-control" 
+                                           th:value="${#temporals.format(supervision.fechaCreadoSup, 'dd/MM/yyyy HH:mm:ss')}" 
+                                           readonly disabled>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label"><i class="bi bi-calendar-check"></i> Última Edición</label>
+                                    <input type="text" class="form-control" 
+                                           th:value="${#temporals.format(supervision.fechaEditadoSup, 'dd/MM/yyyy HH:mm:ss')}" 
+                                           readonly disabled>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Botones de acción -->
+                    <div class="button-group">
+                        <a href="/supervisiones" class="btn-cancel">
+                            <i class="bi bi-x-lg"></i> Cancelar
+                        </a>
+                        <button type="submit" class="btn-submit">
+                            <i class="bi" th:class="${supervision.codigoSup == null ? 'bi-save' : 'bi-arrow-repeat'}"></i>
+                            <span th:text="${supervision.codigoSup == null ? 'Guardar Supervisión' : 'Actualizar Supervisión'}"></span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <div class="text-center mt-4 text-white-50">
+            <small><i class="bi bi-shield-check"></i> Campos con * son obligatorios</small>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const cargoSelect = document.getElementById('cargoId');
+            const codigoCargoInput = document.getElementById('codigoCargoSup');
+            
+            if (cargoSelect && codigoCargoInput) {
+                // Actualizar código cuando se selecciona un cargo
+                cargoSelect.addEventListener('change', function() {
+                    if (this.value) {
+                        codigoCargoInput.value = this.value;
+                    }
+                });
+                
+                // Seleccionar la opción correcta si hay un cargo pre-seleccionado
+                if (codigoCargoInput.value) {
+                    const valorActual = codigoCargoInput.value;
+                    const opcion = Array.from(cargoSelect.options).find(opt => opt.value === valorActual);
+                    if (opcion) {
+                        opcion.selected = true;
+                    }
+                }
+            }
+            
+            // Validación del formulario
+            const form = document.querySelector('form');
+            form.addEventListener('submit', function(e) {
+                const codigoSup = document.getElementById('codigoSup');
+                const codigoCargoSup = document.getElementById('codigoCargoSup');
+                
+                if (codigoSup && !codigoSup.value) {
+                    e.preventDefault();
+                    alert('El código de supervisión es obligatorio');
+                }
+                
+                if (!codigoCargoSup.value) {
+                    e.preventDefault();
+                    alert('El código del cargo es obligatorio');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

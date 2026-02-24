@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detalle de Supervisión</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            padding: 40px 0;
+        }
+        
+        .detail-container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        
+        .detail-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 30px;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.3);
+            overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.2);
+            animation: slideUp 0.6s ease-out;
+        }
+        
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .detail-header {
+            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+            padding: 40px 30px;
+            color: white;
+            position: relative;
+            overflow: hidden;
+            text-align: center;
+        }
+        
+        .detail-header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 70%);
+            animation: rotate 15s linear infinite;
+        }
+        
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        
+        .detail-header i {
+            font-size: 5rem;
+            margin-bottom: 20px;
+            filter: drop-shadow(0 10px 20px rgba(0,0,0,0.3));
+            position: relative;
+            z-index: 1;
+        }
+        
+        .detail-header h1 {
+            font-weight: 800;
+            font-size: 2.8rem;
+            margin: 0;
+            text-shadow: 2px 4px 8px rgba(0,0,0,0.2);
+            position: relative;
+            z-index: 1;
+        }
+        
+        .detail-header p {
+            opacity: 0.9;
+            margin: 10px 0 0 0;
+            font-size: 1.3rem;
+            font-weight: 600;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .back-btn {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            z-index: 10;
+        }
+        
+        .btn-back {
+            background: rgba(255,255,255,0.2);
+            border: 2px solid rgba(255,255,255,0.3);
+            color: white;
+            border-radius: 50px;
+            padding: 10px 25px;
+            font-weight: 600;
+            backdrop-filter: blur(5px);
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .btn-back:hover {
+            background: rgba(255,255,255,0.3);
+            border-color: rgba(255,255,255,0.5);
+            color: white;
+            transform: translateX(-5px);
+        }
+        
+        .detail-body {
+            padding: 40px;
+        }
+        
+        .section-title {
+            background: linear-gradient(135deg, #43e97b20, #38f9d720);
+            padding: 15px 20px;
+            border-radius: 15px;
+            margin: 30px 0 20px 0;
+            color: #43e97b;
+            font-weight: 700;
+            border-left: 5px solid #43e97b;
+        }
+        
+        .section-title i {
+            margin-right: 10px;
+            font-size: 1.5rem;
+        }
+        
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            background: #f8f9fa;
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+        }
+        
+        .info-item {
+            display: flex;
+            flex-direction: column;
+            padding: 15px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        
+        .info-label {
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #43e97b;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+        
+        .info-label i {
+            margin-right: 5px;
+            font-size: 1rem;
+        }
+        
+        .info-value {
+            font-size: 1.1rem;
+            color: #333;
+            font-weight: 500;
+            word-break: break-word;
+        }
+        
+        .badge-code {
+            background: linear-gradient(135deg, #43e97b20, #38f9d720);
+            color: #43e97b;
+            padding: 12px 25px;
+            border-radius: 50px;
+            font-weight: 700;
+            font-size: 1.5rem;
+            border: 2px solid #43e97b40;
+            display: inline-block;
+        }
+        
+        .cargo-badge {
+            background: linear-gradient(135deg, #667eea20, #764ba220);
+            color: #667eea;
+            padding: 8px 20px;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 1rem;
+            border: 2px solid #667eea40;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .date-badge {
+            background: white;
+            padding: 8px 15px;
+            border-radius: 50px;
+            color: #666;
+            font-size: 0.95rem;
+            font-weight: 500;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .date-badge i {
+            color: #43e97b;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+        
+        .stat-card {
+            background: linear-gradient(135deg, #43e97b10, #38f9d710);
+            border-radius: 15px;
+            padding: 25px;
+            text-align: center;
+            border: 1px solid #43e97b20;
+            transition: all 0.3s;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(67, 233, 123, 0.2);
+        }
+        
+        .stat-icon {
+            font-size: 2.5rem;
+            color: #43e97b;
+            margin-bottom: 10px;
+        }
+        
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 800;
+            color: #43e97b;
+            line-height: 1;
+        }
+        
+        .stat-label {
+            color: #888;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 40px;
+            flex-wrap: wrap;
+        }
+        
+        .btn-custom {
+            padding: 15px 35px;
+            border-radius: 50px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: 1rem;
+            transition: all 0.4s;
+            border: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+        }
+        
+        .btn-edit {
+            background: linear-gradient(135deg, #ffc107, #e0a800);
+            color: white;
+            box-shadow: 0 10px 20px #ffc10740;
+        }
+        
+        .btn-view-cargo {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            box-shadow: 0 10px 20px #667eea40;
+        }
+        
+        .btn-custom:hover {
+            transform: translateY(-3px);
+            color: white;
+            box-shadow: 0 15px 30px rgba(0,0,0,0.2);
+        }
+        
+        .btn-custom i {
+            font-size: 1.2rem;
+        }
+        
+        .floating-shape {
+            position: fixed;
+            width: 300px;
+            height: 300px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0.1) 100%);
+            pointer-events: none;
+            z-index: -1;
+        }
+        
+        .shape1 {
+            top: -100px;
+            left: -100px;
+            animation: float 8s ease-in-out infinite;
+        }
+        
+        .shape2 {
+            bottom: -100px;
+            right: -100px;
+            animation: float 6s ease-in-out infinite reverse;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-30px) rotate(10deg); }
+        }
+        
+        /* CORREGIDO: Clases de badge que faltaban */
+        .badge-estado {
+            padding: 5px 15px;
+            border-radius: 50px;
+            font-weight: 600;
+            display: inline-block;
+        }
+        
+        .badge-activo {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .badge-inactivo {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .badge-riesgo {
+            padding: 3px 10px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            display: inline-block;
+        }
+        
+        .riesgo-bajo {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .riesgo-medio {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .riesgo-alto {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .timestamp {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #888;
+            font-size: 0.9rem;
+            margin-top: 30px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 15px;
+        }
+        
+        .timestamp i {
+            color: #43e97b;
+        }
+        
+        .badge-supervision {
+            background: linear-gradient(135deg, #43e97b, #38f9d7);
+            color: white;
+            padding: 5px 15px;
+            border-radius: 50px;
+            font-weight: 600;
+            margin-left: 10px;
+        }
+        
+        .footer-note {
+            text-align: center;
+            margin-top: 20px;
+            color: rgba(255,255,255,0.8);
+            font-size: 0.9rem;
+        }
+        
+        .cargo-info-card {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-top: 20px;
+            border: 1px solid #667eea20;
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.1);
+        }
+        
+        .cargo-info-title {
+            color: #667eea;
+            font-weight: 700;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .cargo-info-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px dashed #e0e0e0;
+        }
+        
+        .cargo-info-item:last-child {
+            border-bottom: none;
+        }
+        
+        .cargo-info-label {
+            color: #888;
+            font-weight: 500;
+        }
+        
+        .cargo-info-value {
+            color: #333;
+            font-weight: 600;
+        }
+        
+        .text-muted-value {
+            color: #999;
+            font-style: italic;
+        }
+        
+        .alert {
+            border-radius: 15px;
+            border: none;
+            margin-bottom: 30px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Elementos decorativos flotantes -->
+    <div class="floating-shape shape1"></div>
+    <div class="floating-shape shape2"></div>
+    
+    <div class="container detail-container">
+        <div class="detail-card">
+            <!-- Cabecera con botón volver -->
+            <div class="back-btn">
+                <a href="/supervisiones" class="btn-back">
+                    <i class="bi bi-arrow-left"></i> Volver al listado
+                </a>
+            </div>
+            
+            <div class="detail-header">
+                <i class="bi bi-eye-fill"></i>
+                <h1>Detalle de Supervisión</h1>
+                <p th:text="'Supervisión #' + ${supervision.codigoSup}">Supervisión #101</p>
+            </div>
+            
+            <div class="detail-body">
+                <!-- Código principal -->
+                <div class="text-center mb-4">
+                    <span class="badge-code" th:text="${supervision.codigoSup}">101</span>
+                </div>
+                
+                <!-- Sección 1: Información Principal -->
+                <div class="section-title">
+                    <i class="bi bi-info-circle"></i> Información de la Supervisión
+                </div>
+                
+                <div class="info-grid">
+                    <div class="info-item">
+                        <span class="info-label"><i class="bi bi-upc-scan"></i> Código Supervisión</span>
+                        <span class="info-value" th:text="${supervision.codigoSup}">101</span>
+                    </div>
+                    
+                    <div class="info-item">
+                        <span class="info-label"><i class="bi bi-briefcase"></i> Código Cargo Sup</span>
+                        <span class="info-value" th:text="${supervision.codigoCargoSup}">201</span>
+                    </div>
+                    
+                    <div class="info-item">
+                        <span class="info-label"><i class="bi bi-calendar-plus"></i> Fecha Creación</span>
+                        <span class="info-value">
+                            <span th:text="${#temporals.format(supervision.fechaCreadoSup, 'dd/MM/yyyy HH:mm:ss')}">01/01/2024 10:30:00</span>
+                        </span>
+                    </div>
+                    
+                    <div class="info-item">
+                        <span class="info-label"><i class="bi bi-calendar-check"></i> Última Edición</span>
+                        <span class="info-value">
+                            <span th:text="${#temporals.format(supervision.fechaEditadoSup, 'dd/MM/yyyy HH:mm:ss')}">01/01/2024 11:30:00</span>
+                        </span>
+                    </div>
+                </div>
+                
+                <!-- Sección 2: Cargo Asociado -->
+                <div class="section-title">
+                    <i class="bi bi-building"></i> Cargo Asociado
+                </div>
+                
+                <div th:if="${supervision.cargo != null}" class="info-grid">
+                    <div class="info-item">
+                        <span class="info-label"><i class="bi bi-upc-scan"></i> Código Cargo</span>
+                        <span class="info-value" th:text="${supervision.cargo.codigoCar}">1</span>
+                    </div>
+                    
+                    <div class="info-item">
+                        <span class="info-label"><i class="bi bi-card-text"></i> Nombre Cargo</span>
+                        <span class="info-value" th:text="${supervision.cargo.nombreCargo}">Supervisor de Ventas</span>
+                    </div>
+                    
+                    <div class="info-item">
+                        <span class="info-label"><i class="bi bi-pin-map"></i> Área</span>
+                        <span class="info-value" th:text="${supervision.cargo.areaCar != null ? supervision.cargo.areaCar : 'No especificada'}">
+                            Ventas
+                        </span>
+                    </div>
+                    
+                    <div class="info-item">
+                        <span class="info-label"><i class="bi bi-diagram-3"></i> Proceso</span>
+                        <span class="info-value" th:text="${supervision.cargo.procesoCar != null ? supervision.cargo.procesoCar : 'No especificado'}">
+                            Gestión de Ventas
+                        </span>
+                    </div>
+                    
+                    <div class="info-item">
+                        <span class="info-label"><i class="bi bi-exclamation-diamond"></i> Nivel Riesgo</span>
+                        <span class="info-value">
+                            <span th:if="${supervision.cargo.nivelRiesgoCar != null}" 
+                                  class="badge-riesgo"
+                                  th:classappend="${supervision.cargo.nivelRiesgoCar == 'Bajo' ? 'riesgo-bajo' : 
+                                                   (supervision.cargo.nivelRiesgoCar == 'Medio' ? 'riesgo-medio' : 
+                                                    (supervision.cargo.nivelRiesgoCar == 'Alto' ? 'riesgo-alto' : 'bg-secondary text-white'))}"
+                                  th:text="${supervision.cargo.nivelRiesgoCar}">
+                                Bajo
+                            </span>
+                            <span th:unless="${supervision.cargo.nivelRiesgoCar != null}" class="text-muted-value">
+                                No especificado
+                            </span>
+                        </span>
+                    </div>
+                    
+                    <div class="info-item">
+                        <span class="info-label"><i class="bi bi-check-circle"></i> Estado</span>
+                        <span class="info-value">
+                            <span th:if="${supervision.cargo.estadoCar != null}" 
+                                  class="badge-estado"
+                                  th:classappend="${supervision.cargo.estadoCar == 'Activo' ? 'badge-activo' : 'badge-inactivo'}">
+                                <i th:if="${supervision.cargo.estadoCar == 'Activo'}" class="bi bi-check-circle-fill me-1"></i>
+                                <i th:if="${supervision.cargo.estadoCar != 'Activo'}" class="bi bi-exclamation-circle-fill me-1"></i>
+                                <span th:text="${supervision.cargo.estadoCar}">Activo</span>
+                            </span>
+                            <span th:unless="${supervision.cargo.estadoCar != null}" class="text-muted-value">
+                                No especificado
+                            </span>
+                        </span>
+                    </div>
+                </div>
+                
+                <div th:unless="${supervision.cargo != null}" class="alert alert-warning">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                    Esta supervisión no tiene un cargo asociado.
+                </div>
+                
+                <!-- Estadísticas -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="bi bi-clock-history"></i>
+                        </div>
+                        <div class="stat-value" th:text="${diasTranscurridos != null ? diasTranscurridos : '0'}">0</div>
+                        <div class="stat-label">Días desde creación</div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="bi bi-arrow-repeat"></i>
+                        </div>
+                        <div class="stat-value" th:text="${vecesEditado != null ? vecesEditado : '1'}">1</div>
+                        <div class="stat-label">Veces editado</div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="bi bi-bar-chart"></i>
+                        </div>
+                        <div class="stat-value" th:text="${supervision.cargo != null and supervision.cargo.supervisas != null ? #lists.size(supervision.cargo.supervisas) : '0'}">0</div>
+                        <div class="stat-label">Total supervisiones del cargo</div>
+                    </div>
+                </div>
+                
+                <!-- Información adicional del cargo si existe -->
+                <div th:if="${supervision.cargo != null}" class="cargo-info-card">
+                    <div class="cargo-info-title">
+                        <i class="bi bi-info-circle-fill"></i>
+                        <span>Detalles adicionales del cargo</span>
+                    </div>
+                    
+                    <div class="cargo-info-item">
+                        <span class="cargo-info-label">Reporta a:</span>
+                        <span class="cargo-info-value" th:text="${supervision.cargo.reportaCar != null ? supervision.cargo.reportaCar : 'No especificado'}">
+                            Gerente General
+                        </span>
+                    </div>
+                    
+                    <div class="cargo-info-item">
+                        <span class="cargo-info-label">Macroproceso:</span>
+                        <span class="cargo-info-value" th:text="${supervision.cargo.macroprocesoCar != null ? supervision.cargo.macroprocesoCar : 'No especificado'}">
+                            Gestión Comercial
+                        </span>
+                    </div>
+                    
+                    <div class="cargo-info-item">
+                        <span class="cargo-info-label">Grupo de Riesgo:</span>
+                        <span class="cargo-info-value" th:text="${supervision.cargo.grupoRiesgoCar != null ? supervision.cargo.grupoRiesgoCar : 'No especificado'}">
+                            Grupo A
+                        </span>
+                    </div>
+                    
+                    <div class="cargo-info-item">
+                        <span class="cargo-info-label">Misión del cargo:</span>
+                        <span class="cargo-info-value" 
+                              th:text="${supervision.cargo.misionCar != null ? supervision.cargo.misionCar : 'No especificada'}"
+                              th:title="${supervision.cargo.misionCar}">
+                            Supervisar y coordinar...
+                        </span>
+                    </div>
+                </div>
+                
+                <!-- Marcador de tiempo -->
+                <div class="timestamp">
+                    <i class="bi bi-clock"></i>
+                    <span>Información actualizada en tiempo real · </span>
+                    <strong th:text="${#temporals.format(#temporals.createNow(), 'HH:mm:ss')}">15:30:45</strong>
+                </div>
+                
+                <!-- Botones de acción -->
+                <div class="action-buttons">
+                    <a th:href="@{'/supervisiones/editar/' + ${supervision.codigoSup}}" class="btn-custom btn-edit">
+                        <i class="bi bi-pencil-square"></i>
+                        Editar Supervisión
+                    </a>
+                    <a th:if="${supervision.cargo != null}" 
+                       th:href="@{'/cargos/ver/' + ${supervision.cargo.codigoCar}}" 
+                       class="btn-custom btn-view-cargo">
+                        <i class="bi bi-briefcase"></i>
+                        Ver Cargo Asociado
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Footer -->
+        <div class="footer-note">
+            <i class="bi bi-shield-check me-1"></i>
+            Información confidencial - Solo para uso administrativo
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Animación de entrada para las estadísticas
+        document.querySelectorAll('.stat-card').forEach((card, index) => {
+            card.style.animation = `slideUp 0.5s ease-out ${index * 0.1}s both`;
+        });
+    </script>
+</body>
+</html>

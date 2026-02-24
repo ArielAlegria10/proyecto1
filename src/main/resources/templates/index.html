@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Gestión Empresarial</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .main-container {
+            padding-top: 50px;
+        }
+        
+        .header-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 40px;
+            margin-bottom: 50px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        
+        .title {
+            color: #333;
+            font-weight: 800;
+            font-size: 3rem;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .subtitle {
+            color: #666;
+            font-size: 1.2rem;
+            margin-bottom: 30px;
+        }
+        
+        .dashboard-card {
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            height: 100%;
+            border: none;
+            position: relative;
+        }
+        
+        .dashboard-card:hover {
+            transform: translateY(-15px) scale(1.02);
+            box-shadow: 0 30px 45px rgba(0,0,0,0.3);
+        }
+        
+        .card-header {
+            padding: 30px 20px;
+            text-align: center;
+            border: none;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .card-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 100%);
+            transform: translateX(-100%);
+            transition: transform 0.6s;
+        }
+        
+        .dashboard-card:hover .card-header::before {
+            transform: translateX(100%);
+        }
+        
+        .card-header i {
+            font-size: 4rem;
+            color: white;
+            margin-bottom: 15px;
+            filter: drop-shadow(0 5px 15px rgba(0,0,0,0.3));
+        }
+        
+        .card-header h3 {
+            color: white;
+            font-weight: 700;
+            font-size: 2rem;
+            margin: 0;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        .card-body {
+            padding: 30px 25px;
+            text-align: center;
+        }
+        
+        .card-text {
+            color: #555;
+            font-size: 1.1rem;
+            line-height: 1.6;
+            margin-bottom: 25px;
+        }
+        
+        .stats-container {
+            display: flex;
+            justify-content: space-around;
+            margin: 25px 0;
+            padding: 15px 0;
+            border-top: 2px solid #f0f0f0;
+            border-bottom: 2px solid #f0f0f0;
+        }
+        
+        .stat-item {
+            text-align: center;
+        }
+        
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 800;
+            color: #667eea;
+            line-height: 1;
+        }
+        
+        .stat-label {
+            color: #888;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .btn-custom {
+            padding: 12px 35px;
+            border-radius: 50px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: 0.9rem;
+            transition: all 0.3s;
+            border: none;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            margin-top: 15px;
+        }
+        
+        .btn-custom:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+        }
+        
+        .btn-custom i {
+            margin-right: 8px;
+        }
+        
+        .btn-primary-custom {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .btn-success-custom {
+            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+            color: white;
+        }
+        
+        .footer {
+            text-align: center;
+            margin-top: 60px;
+            color: rgba(255,255,255,0.8);
+            padding: 20px;
+        }
+        
+        .footer a {
+            color: white;
+            text-decoration: none;
+            font-weight: 600;
+        }
+        
+        .footer a:hover {
+            text-decoration: underline;
+        }
+        
+        .welcome-badge {
+            background: rgba(255,255,255,0.2);
+            border-radius: 50px;
+            padding: 8px 20px;
+            display: inline-block;
+            color: white;
+            font-weight: 500;
+            margin-bottom: 20px;
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255,255,255,0.3);
+        }
+        
+        .floating-shape {
+            position: fixed;
+            width: 300px;
+            height: 300px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%);
+            pointer-events: none;
+            z-index: -1;
+        }
+        
+        .shape1 {
+            top: -100px;
+            left: -100px;
+        }
+        
+        .shape2 {
+            bottom: -100px;
+            right: -100px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Elementos decorativos flotantes -->
+    <div class="floating-shape shape1"></div>
+    <div class="floating-shape shape2"></div>
+    
+    <div class="container main-container">
+        <!-- Cabecera con efecto vidrio -->
+        <div class="header-card text-center">
+            <span class="welcome-badge">
+                <i class="bi bi-stars"></i> BIENVENIDO AL SISTEMA
+            </span>
+            <h1 class="title">Gestión Empresarial</h1>
+            <p class="subtitle">Plataforma integrada para la administración eficiente de recursos</p>
+            
+            <!-- Estadísticas rápidas -->
+            <div class="row justify-content-center">
+                <div class="col-md-8">
+                    <div class="stats-container bg-light bg-opacity-50 rounded-pill">
+                        <div class="stat-item">
+                            <div class="stat-number" th:text="${totalCargos != null ? totalCargos : '0'}">0</div>
+                            <div class="stat-label">Cargos</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number" th:text="${totalSupervisiones != null ? totalSupervisiones : '0'}">0</div>
+                            <div class="stat-label">Supervisiones</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number">
+                                <i class="bi bi-arrow-up-circle text-success"></i>
+                            </div>
+                            <div class="stat-label">Activo</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Tarjetas principales -->
+        <div class="row g-4">
+            <!-- Tarjeta de Cargos -->
+            <div class="col-lg-6">
+                <div class="dashboard-card">
+                    <div class="card-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                        <i class="bi bi-briefcase-fill"></i>
+                        <h3>Cargos</h3>
+                    </div>
+                    <div class="card-body">
+                        <p class="card-text">
+                            Administra la estructura organizacional de la empresa. 
+                            Crea, edita y elimina cargos según las necesidades del negocio.
+                        </p>
+                        
+                        <!-- Características -->
+                        <div class="d-flex justify-content-center gap-3 mb-4">
+                            <span class="badge bg-light text-dark p-2">
+                                <i class="bi bi-plus-circle text-primary"></i> Crear
+                            </span>
+                            <span class="badge bg-light text-dark p-2">
+                                <i class="bi bi-pencil-square text-warning"></i> Editar
+                            </span>
+                            <span class="badge bg-light text-dark p-2">
+                                <i class="bi bi-eye text-info"></i> Visualizar
+                            </span>
+                        </div>
+                        
+                        <a href="/cargos" class="btn btn-custom btn-primary-custom">
+                            <i class="bi bi-box-arrow-in-right"></i> Acceder a Cargos
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Tarjeta de Supervisiones -->
+            <div class="col-lg-6">
+                <div class="dashboard-card">
+                    <div class="card-header" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);">
+                        <i class="bi bi-eye-fill"></i>
+                        <h3>Supervisiones</h3>
+                    </div>
+                    <div class="card-body">
+                        <p class="card-text">
+                            Gestiona las supervisiones realizadas en la empresa. 
+                            Mantén un registro detallado de todas las actividades supervisadas.
+                        </p>
+                        
+                        <!-- Características -->
+                        <div class="d-flex justify-content-center gap-3 mb-4">
+                            <span class="badge bg-light text-dark p-2">
+                                <i class="bi bi-plus-circle text-success"></i> Registrar
+                            </span>
+                            <span class="badge bg-light text-dark p-2">
+                                <i class="bi bi-calendar-check text-info"></i> Seguimiento
+                            </span>
+                            <span class="badge bg-light text-dark p-2">
+                                <i class="bi bi-graph-up text-primary"></i> Reportes
+                            </span>
+                        </div>
+                        
+                        <a href="/supervisiones" class="btn btn-custom btn-success-custom">
+                            <i class="bi bi-box-arrow-in-right"></i> Acceder a Supervisiones
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Sección de información adicional -->
+        <div class="row mt-5">
+            <div class="col-12">
+                <div class="bg-white bg-opacity-10 rounded-4 p-4 text-center text-white">
+                    <div class="row align-items-center">
+                        <div class="col-md-4">
+                            <i class="bi bi-shield-check" style="font-size: 2rem;"></i>
+                            <p class="mb-0 mt-2">Sistema Seguro</p>
+                        </div>
+                        <div class="col-md-4">
+                            <i class="bi bi-clock-history" style="font-size: 2rem;"></i>
+                            <p class="mb-0 mt-2">Actualización en Tiempo Real</p>
+                        </div>
+                        <div class="col-md-4">
+                            <i class="bi bi-people" style="font-size: 2rem;"></i>
+                            <p class="mb-0 mt-2">Gestión Colaborativa</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Footer -->
+        <div class="footer">
+            <p class="mb-0">
+                <i class="bi bi-c-circle"></i> 2026 Sistema de Gestión Empresarial - Todos los derechos reservados
+            </p>
+            <p class="mt-2">
+                <a href="#" class="text-white me-3">Términos y condiciones</a>
+                <a href="#" class="text-white me-3">Privacidad</a>
+                <a href="#" class="text-white">Contacto</a>
+            </p>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

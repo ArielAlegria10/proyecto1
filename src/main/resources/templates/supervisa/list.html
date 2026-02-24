@@ -1,0 +1,818 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lista de Supervisiones</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            padding: 30px 0;
+        }
+        
+        .page-container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .content-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 30px;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.3);
+            overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.2);
+            animation: fadeIn 0.8s ease-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .page-header {
+            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+            padding: 30px;
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .page-header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 70%);
+            animation: rotate 20s linear infinite;
+        }
+        
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        
+        .page-header h1 {
+            font-weight: 800;
+            font-size: 2.5rem;
+            margin: 0;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+            position: relative;
+            z-index: 1;
+        }
+        
+        .page-header p {
+            opacity: 0.9;
+            margin: 10px 0 0 0;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .stats-bar {
+            background: white;
+            border-radius: 20px;
+            padding: 20px;
+            margin: -30px 30px 30px 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            position: relative;
+            z-index: 10;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        
+        .stat-item {
+            text-align: center;
+            flex: 1;
+            min-width: 120px;
+        }
+        
+        .stat-value {
+            font-size: 2.2rem;
+            font-weight: 800;
+            color: #43e97b;
+            line-height: 1;
+        }
+        
+        .stat-label {
+            color: #888;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 5px;
+        }
+        
+        .stat-icon {
+            font-size: 1.5rem;
+            color: #38f9d7;
+            margin-bottom: 5px;
+        }
+        
+        .action-bar {
+            padding: 0 30px 20px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        
+        .search-box {
+            position: relative;
+            flex: 1;
+            max-width: 400px;
+        }
+        
+        .search-box i {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #43e97b;
+        }
+        
+        .search-box input {
+            width: 100%;
+            padding: 12px 20px 12px 45px;
+            border: 2px solid #e0e0e0;
+            border-radius: 50px;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+        
+        .search-box input:focus {
+            border-color: #43e97b;
+            box-shadow: 0 0 0 4px rgba(67, 233, 123, 0.1);
+            outline: none;
+        }
+        
+        .btn-new {
+            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+            border: none;
+            border-radius: 50px;
+            padding: 12px 30px;
+            color: white;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s;
+            box-shadow: 0 10px 20px rgba(67, 233, 123, 0.3);
+        }
+        
+        .btn-new:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 30px rgba(67, 233, 123, 0.4);
+            color: white;
+        }
+        
+        .btn-home {
+            background: rgba(67, 233, 123, 0.1);
+            border: 2px solid rgba(67, 233, 123, 0.3);
+            border-radius: 50px;
+            padding: 12px 25px;
+            color: #43e97b;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s;
+        }
+        
+        .btn-home:hover {
+            background: rgba(67, 233, 123, 0.2);
+            border-color: #43e97b;
+            color: #43e97b;
+        }
+        
+        .table-container {
+            padding: 0 30px 30px 30px;
+            overflow-x: auto;
+        }
+        
+        .custom-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0 8px;
+        }
+        
+        .custom-table thead th {
+            background: #f8f9fa;
+            padding: 15px;
+            font-weight: 700;
+            color: #555;
+            text-transform: uppercase;
+            font-size: 0.8rem;
+            letter-spacing: 0.5px;
+            border: none;
+            border-radius: 10px;
+            white-space: nowrap;
+        }
+        
+        .custom-table tbody tr {
+            background: white;
+            border-radius: 15px;
+            transition: all 0.3s;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        
+        .custom-table tbody tr:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(67, 233, 123, 0.2);
+        }
+        
+        .custom-table tbody td {
+            padding: 15px 12px;
+            vertical-align: middle;
+            border: none;
+            white-space: nowrap;
+        }
+        
+        .custom-table tbody td:first-child {
+            border-radius: 15px 0 0 15px;
+        }
+        
+        .custom-table tbody td:last-child {
+            border-radius: 0 15px 15px 0;
+        }
+        
+        .badge-code {
+            background: linear-gradient(135deg, #43e97b20, #38f9d720);
+            color: #43e97b;
+            padding: 5px 12px;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            border: 1px solid #43e97b40;
+            display: inline-block;
+        }
+        
+        .cargo-badge {
+            background: linear-gradient(135deg, #667eea20, #764ba220);
+            color: #667eea;
+            padding: 5px 12px;
+            border-radius: 50px;
+            font-weight: 500;
+            font-size: 0.9rem;
+            border: 1px solid #667eea40;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .date-badge {
+            background: #f8f9fa;
+            padding: 5px 10px;
+            border-radius: 8px;
+            color: #666;
+            font-size: 0.85rem;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .date-badge i {
+            color: #43e97b;
+        }
+        
+        .btn-action {
+            width: 35px;
+            height: 35px;
+            border-radius: 10px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 2px;
+            transition: all 0.3s;
+            border: none;
+            color: white;
+            text-decoration: none;
+        }
+        
+        .btn-view {
+            background: linear-gradient(135deg, #17a2b8, #138496);
+            box-shadow: 0 5px 15px #17a2b840;
+        }
+        
+        .btn-edit {
+            background: linear-gradient(135deg, #ffc107, #e0a800);
+            box-shadow: 0 5px 15px #ffc10740;
+        }
+        
+        .btn-delete {
+            background: linear-gradient(135deg, #dc3545, #c82333);
+            box-shadow: 0 5px 15px #dc354540;
+        }
+        
+        .btn-action:hover {
+            transform: translateY(-3px) scale(1.1);
+            color: white;
+        }
+        
+        .btn-action i {
+            font-size: 1rem;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            background: #f8f9fa;
+            border-radius: 20px;
+            margin: 20px 30px 30px 30px;
+        }
+        
+        .floating-shape {
+            position: fixed;
+            width: 300px;
+            height: 300px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0.1) 100%);
+            pointer-events: none;
+            z-index: -1;
+        }
+        
+        .shape1 {
+            top: -100px;
+            left: -100px;
+            animation: float 8s ease-in-out infinite;
+        }
+        
+        .shape2 {
+            bottom: -100px;
+            right: -100px;
+            animation: float 6s ease-in-out infinite reverse;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-30px) rotate(10deg); }
+        }
+        
+        .pagination-info {
+            padding: 20px 30px;
+            background: #f8f9fa;
+            border-radius: 0 0 30px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        
+        .total-badge {
+            background: white;
+            padding: 8px 20px;
+            border-radius: 50px;
+            color: #43e97b;
+            font-weight: 600;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        
+        .filter-badge {
+            background: white;
+            padding: 8px 20px;
+            border-radius: 50px;
+            color: #667eea;
+            font-weight: 600;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            cursor: pointer;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            border: 1px solid transparent;
+        }
+        
+        .filter-badge:hover {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+        
+        .filter-badge.active {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+        
+        .alert-message {
+            margin: 20px 30px 0 30px;
+            border-radius: 15px;
+            border: none;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+        
+        .cargo-info {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .cargo-nombre {
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .cargo-area {
+            font-size: 0.75rem;
+            color: #888;
+        }
+        
+        .badge-supervision-count {
+            background: #43e97b;
+            color: white;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            margin-left: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="floating-shape shape1"></div>
+    <div class="floating-shape shape2"></div>
+    
+    <div class="container page-container">
+        <!-- Mensajes de alerta -->
+        <div th:if="${exito}" class="alert alert-success alert-dismissible fade show alert-message" role="alert">
+            <i class="bi bi-check-circle-fill me-2"></i>
+            <span th:text="${exito}">Operación exitosa</span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        
+        <div th:if="${error}" class="alert alert-danger alert-dismissible fade show alert-message" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+            <span th:text="${error}">Error en la operación</span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        
+        <div class="content-card">
+            <!-- Cabecera -->
+            <div class="page-header">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h1>
+                            <i class="bi bi-eye-fill me-3"></i>
+                            Gestión de Supervisiones
+                        </h1>
+                        <p>Administra y da seguimiento a todas las supervisiones realizadas</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Barra de estadísticas -->
+            <div class="stats-bar">
+                <div class="stat-item">
+                    <div class="stat-icon">
+                        <i class="bi bi-eye"></i>
+                    </div>
+                    <div class="stat-value" th:text="${#lists.size(supervisiones)}">0</div>
+                    <div class="stat-label">Total Supervisiones</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-icon">
+                        <i class="bi bi-calendar-check"></i>
+                    </div>
+                    <div class="stat-value" th:text="${supervisionesHoy != null ? supervisionesHoy : '0'}">0</div>
+                    <div class="stat-label">Hoy</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-icon">
+                        <i class="bi bi-calendar-week"></i>
+                    </div>
+                    <div class="stat-value" th:text="${supervisionesSemana != null ? supervisionesSemana : '0'}">0</div>
+                    <div class="stat-label">Esta Semana</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-icon">
+                        <i class="bi bi-building"></i>
+                    </div>
+                    <div class="stat-value" th:text="${cargosConSupervision != null ? cargosConSupervision : '0'}">0</div>
+                    <div class="stat-label">Cargos Supervisados</div>
+                </div>
+            </div>
+            
+            <!-- Barra de acciones -->
+            <div class="action-bar">
+                <div class="search-box">
+                    <i class="bi bi-search"></i>
+                    <input type="text" id="searchInput" placeholder="Buscar por código, cargo o área...">
+                </div>
+                <div class="d-flex gap-2">
+                    <a href="/" class="btn-home">
+                        <i class="bi bi-house"></i> Inicio
+                    </a>
+                    <a href="/supervisiones/nuevo" class="btn-new">
+                        <i class="bi bi-plus-circle"></i> Nueva Supervisión
+                    </a>
+                </div>
+            </div>
+            
+            <!-- Filtros rápidos -->
+            <div class="px-4 mb-3 d-flex gap-2 flex-wrap">
+                <span class="filter-badge" onclick="filtrarHoy()" id="filtroHoy">
+                    <i class="bi bi-calendar-day"></i> Hoy
+                </span>
+                <span class="filter-badge" onclick="filtrarSemana()" id="filtroSemana">
+                    <i class="bi bi-calendar-week"></i> Esta semana
+                </span>
+                <span class="filter-badge" onclick="filtrarMes()" id="filtroMes">
+                    <i class="bi bi-calendar-month"></i> Este mes
+                </span>
+                <span class="filter-badge" onclick="ordenarRecientes()" id="filtroRecientes">
+                    <i class="bi bi-clock-history"></i> Más recientes
+                </span>
+                <span class="filter-badge" onclick="limpiarFiltros()" id="filtroLimpiar">
+                    <i class="bi bi-x-circle"></i> Limpiar
+                </span>
+            </div>
+            
+            <!-- Tabla de supervisiones -->
+            <div class="table-container">
+                <table class="custom-table">
+                    <thead>
+                        <tr>
+                            <th>Código Sup</th>
+                            <th>Código Cargo</th>
+                            <th>Cargo Asociado</th>
+                            <th>Área</th>
+                            <th>Fecha Creación</th>
+                            <th>Fecha Edición</th>
+                            <th style="text-align: center;">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="supervisionesTable">
+                        <tr th:each="sup : ${supervisiones}" 
+                            th:attr="data-codigo=${sup.codigoSup}, 
+                                     data-cargo-nombre=${sup.cargo?.nombreCargo}, 
+                                     data-area=${sup.cargo?.areaCar},
+                                     data-fecha-creacion=${#temporals.format(sup.fechaCreadoSup, 'yyyy-MM-dd')},
+                                     data-fecha-completa=${sup.fechaCreadoSup}">
+                            
+                            <td>
+                                <span class="badge-code" th:text="${sup.codigoSup}">101</span>
+                            </td>
+                            
+                            <td>
+                                <span class="badge-code" th:text="${sup.codigoCargoSup}">201</span>
+                            </td>
+                            
+                            <td>
+                                <div th:if="${sup.cargo != null}" class="cargo-info">
+                                    <span class="cargo-nombre">
+                                        <i class="bi bi-briefcase me-1"></i>
+                                        <span th:text="${sup.cargo.nombreCargo}">Supervisor</span>
+                                    </span>
+                                    <small class="cargo-area" th:text="${sup.cargo.areaCar != null ? sup.cargo.areaCar : 'Sin área'}">
+                                        Ventas
+                                    </small>
+                                </div>
+                                <span th:unless="${sup.cargo != null}" class="text-muted">
+                                    <i class="bi bi-dash-circle"></i> Sin cargo
+                                </span>
+                            </td>
+                            
+                            <td>
+                                <span th:if="${sup.cargo != null and sup.cargo.areaCar != null}" 
+                                      class="badge bg-light text-dark p-2">
+                                    <i class="bi bi-pin-map"></i>
+                                    <span th:text="${sup.cargo.areaCar}">Ventas</span>
+                                </span>
+                                <span th:unless="${sup.cargo != null and sup.cargo.areaCar != null}" class="text-muted">
+                                    -
+                                </span>
+                            </td>
+                            
+                            <td>
+                                <span class="date-badge" 
+                                      th:title="${#temporals.format(sup.fechaCreadoSup, 'dd/MM/yyyy HH:mm:ss')}">
+                                    <i class="bi bi-calendar3"></i>
+                                    <span th:text="${#temporals.format(sup.fechaCreadoSup, 'dd/MM/yyyy')}">01/01/2024</span>
+                                    <span th:text="${#temporals.format(sup.fechaCreadoSup, 'HH:mm')}" class="ms-1">10:30</span>
+                                </span>
+                            </td>
+                            
+                            <td>
+                                <span class="date-badge"
+                                      th:title="${#temporals.format(sup.fechaEditadoSup, 'dd/MM/yyyy HH:mm:ss')}">
+                                    <i class="bi bi-pencil-square"></i>
+                                    <span th:text="${#temporals.format(sup.fechaEditadoSup, 'dd/MM/yyyy')}">01/01/2024</span>
+                                    <span th:text="${#temporals.format(sup.fechaEditadoSup, 'HH:mm')}" class="ms-1">11:30</span>
+                                </span>
+                            </td>
+                            
+                            <td style="text-align: center;">
+                                <div class="d-flex justify-content-center gap-1">
+                                    <a th:href="@{'/supervisiones/ver/' + ${sup.codigoSup}}" 
+                                       class="btn-action btn-view" 
+                                       title="Ver detalles">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                    <a th:href="@{'/supervisiones/editar/' + ${sup.codigoSup}}" 
+                                       class="btn-action btn-edit"
+                                       title="Editar supervisión">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                    <a th:href="@{'/supervisiones/eliminar/' + ${sup.codigoSup}}" 
+                                       class="btn-action btn-delete"
+                                       title="Eliminar supervisión"
+                                       onclick="return confirm('¿Está seguro de eliminar esta supervisión? Esta acción no se puede deshacer.')">
+                                        <i class="bi bi-trash"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        
+                        <!-- Mensaje cuando no hay supervisiones -->
+                        <tr th:if="${#lists.isEmpty(supervisiones)}">
+                            <td colspan="7">
+                                <div class="empty-state">
+                                    <i class="bi bi-eye-slash"></i>
+                                    <h3>No hay supervisiones registradas</h3>
+                                    <p>Comienza registrando tu primera supervisión en el sistema</p>
+                                    <a href="/supervisiones/nuevo" class="btn-new">
+                                        <i class="bi bi-plus-circle"></i> Crear Primera Supervisión
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Footer con información adicional -->
+            <div class="pagination-info">
+                <div class="total-badge">
+                    <i class="bi bi-database"></i>
+                    Total: <strong th:text="${#lists.size(supervisiones)}">0</strong> supervisiones
+                </div>
+                <div class="d-flex gap-3">
+                    <small class="text-muted">
+                        <i class="bi bi-building"></i>
+                        <span th:text="${cargosConSupervision != null ? cargosConSupervision : '0'}"></span> cargos supervisados
+                    </small>
+                    <small class="text-muted">
+                        <i class="bi bi-clock"></i>
+                        <span th:text="${#temporals.format(#temporals.createNow(), 'dd/MM/yyyy HH:mm:ss')}"></span>
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Función de búsqueda en tiempo real
+        document.getElementById('searchInput').addEventListener('keyup', function() {
+            let searchText = this.value.toLowerCase();
+            let rows = document.querySelectorAll('#supervisionesTable tr');
+            
+            rows.forEach(row => {
+                if (row.querySelector('.empty-state')) return;
+                
+                let codigo = row.getAttribute('data-codigo')?.toLowerCase() || '';
+                let cargoNombre = row.getAttribute('data-cargo-nombre')?.toLowerCase() || '';
+                let area = row.getAttribute('data-area')?.toLowerCase() || '';
+                
+                if (codigo.includes(searchText) || cargoNombre.includes(searchText) || area.includes(searchText)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        });
+        
+        // Función para filtrar por hoy
+        function filtrarHoy() {
+            let hoy = new Date().toISOString().split('T')[0];
+            let rows = document.querySelectorAll('#supervisionesTable tr');
+            
+            rows.forEach(row => {
+                if (row.querySelector('.empty-state')) return;
+                
+                let fechaCreacion = row.getAttribute('data-fecha-creacion');
+                if (fechaCreacion === hoy) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+            
+            marcarFiltroActivo('filtroHoy');
+        }
+        
+        // Función para filtrar por semana
+        function filtrarSemana() {
+            let hoy = new Date();
+            let inicioSemana = new Date(hoy);
+            inicioSemana.setDate(hoy.getDate() - hoy.getDay());
+            let finSemana = new Date(inicioSemana);
+            finSemana.setDate(inicioSemana.getDate() + 6);
+            
+            let rows = document.querySelectorAll('#supervisionesTable tr');
+            
+            rows.forEach(row => {
+                if (row.querySelector('.empty-state')) return;
+                
+                let fechaCreacion = new Date(row.getAttribute('data-fecha-creacion'));
+                if (fechaCreacion >= inicioSemana && fechaCreacion <= finSemana) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+            
+            marcarFiltroActivo('filtroSemana');
+        }
+        
+        // Función para filtrar por mes
+        function filtrarMes() {
+            let hoy = new Date();
+            let inicioMes = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
+            let finMes = new Date(hoy.getFullYear(), hoy.getMonth() + 1, 0);
+            
+            let rows = document.querySelectorAll('#supervisionesTable tr');
+            
+            rows.forEach(row => {
+                if (row.querySelector('.empty-state')) return;
+                
+                let fechaCreacion = new Date(row.getAttribute('data-fecha-creacion'));
+                if (fechaCreacion >= inicioMes && fechaCreacion <= finMes) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+            
+            marcarFiltroActivo('filtroMes');
+        }
+        
+        // Función para ordenar por más recientes
+        function ordenarRecientes() {
+            let tbody = document.getElementById('supervisionesTable');
+            let rows = Array.from(tbody.querySelectorAll('tr:not(:has(.empty-state))'));
+            
+            rows.sort((a, b) => {
+                let fechaA = new Date(a.getAttribute('data-fecha-completa'));
+                let fechaB = new Date(b.getAttribute('data-fecha-completa'));
+                return fechaB - fechaA;
+            });
+            
+            // Reordenar filas
+            rows.forEach(row => tbody.appendChild(row));
+            
+            marcarFiltroActivo('filtroRecientes');
+        }
+        
+        // Función para marcar filtro activo
+        function marcarFiltroActivo(id) {
+            document.querySelectorAll('.filter-badge').forEach(f => {
+                f.classList.remove('active');
+            });
+            document.getElementById(id).classList.add('active');
+        }
+        
+        // Función para limpiar filtros
+        function limpiarFiltros() {
+            let rows = document.querySelectorAll('#supervisionesTable tr');
+            rows.forEach(row => {
+                if (!row.querySelector('.empty-state')) {
+                    row.style.display = '';
+                }
+            });
+            document.getElementById('searchInput').value = '';
+            
+            document.querySelectorAll('.filter-badge').forEach(f => {
+                f.classList.remove('active');
+            });
+        }
+        
+        // Animación de entrada para las filas
+        document.querySelectorAll('#supervisionesTable tr').forEach((row, index) => {
+            if (!row.querySelector('.empty-state')) {
+                row.style.animation = `fadeIn 0.5s ease-out ${index * 0.1}s both`;
+            }
+        });
+        
+        // Tooltips mejorados
+        document.querySelectorAll('.btn-action').forEach(btn => {
+            btn.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateY(-3px) scale(1.1)';
+            });
+            btn.addEventListener('mouseleave', function() {
+                this.style.transform = '';
+            });
+        });
+    </script>
+</body>
+</html>
